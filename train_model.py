@@ -59,16 +59,6 @@ def train_model(input_trainer):
     )
     #
     #TODO: build another data process for Greedy search, i.e., gs
-    #if input_trainer['early_stop'] == 'bleu':
-    bs_data_dict = {
-        'iteration': 0, 'max_epoch': 1, 'size_batch': 1,
-        'tag_split': 'dev'
-    }
-    #
-    #data_process_bs = data_processers.DataProcess(
-    #    path_rawdata=input_trainer['path_rawdata']
-    #)
-    #
     ##
     bs_settings = {
         'size_beam': 1, # greedy search
