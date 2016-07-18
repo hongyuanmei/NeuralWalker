@@ -204,6 +204,8 @@ def train_model(input_trainer):
                 if bs.check_pos_end():
                     cnt_success += 1
                 #
+                bs.refresh_state()
+                #
             #
             num_steps += max_steps
             #

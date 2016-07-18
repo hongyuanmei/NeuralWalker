@@ -30,11 +30,14 @@ input_trainer = {
     'log_file': './log.dim100.txt',
     'path_rawdata': None,
     #
-    'max_epoch': 10,
+    'max_epoch': 50,
     'dim_model': 100,
     'path_start_model': None,
     'save_file_path': './dim100.models/',
-    'optimizer': 'adam'
+    'optimizer': 'adam',
+    'maps_train': [
+        'grid'#, 'jelly'
+    ]
 }
 
 #TODO: start training

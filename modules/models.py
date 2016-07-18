@@ -38,6 +38,8 @@ class NeuralWalker(object):
         self.dim_lang = model_settings['dim_lang']
         self.dim_action = model_settings['dim_action']
         #
+        print "dim of model, world, lang and action is : ", self.dim_model, self.dim_world, self.dim_lang, self.dim_action
+        #
         self.Emb_lang_sparse = theano.shared(
             numpy.identity(self.dim_lang, dtype=dtype),
             name='Emb_lang_sparse'
@@ -50,7 +52,7 @@ class NeuralWalker(object):
         )
         self.W_enc_forward = theano.shared(
             utils.sample_weights(
-                2*self.dim_lang, 4*self.dim_model
+                2*self.dim_model, 4*self.dim_model
             ), name='W_enc_forward'
         )
         self.b_enc_forward = theano.shared(
@@ -64,7 +66,7 @@ class NeuralWalker(object):
         )
         self.W_enc_backward = theano.shared(
             utils.sample_weights(
-                2*self.dim_lang, 4*self.dim_model
+                2*self.dim_model, 4*self.dim_model
             ), name='W_enc_backward'
         )
         self.b_enc_backward = theano.shared(
@@ -101,7 +103,7 @@ class NeuralWalker(object):
             name='b_dec'
         )
         #
-        self.W_out_hz = theano.shard(
+        self.W_out_hz = theano.shared(
             utils.sample_weights(
                 self.dim_lang+3*self.dim_model, self.dim_model
             ), name='W_out_hz'
@@ -116,7 +118,7 @@ class NeuralWalker(object):
             numpy.zeros((self.dim_model, ), dtype=dtype),
             name='c0'
         )
-        self.h0 = theano.shard(
+        self.h0 = theano.shared(
             numpy.zeros((self.dim_model, ), dtype=dtype),
             name='h0'
         )
@@ -246,7 +248,7 @@ class NeuralWalker(object):
         )
         #
         [ht_enc_forward, ct_enc_forward], _ = theano.scan(
-            fn = func_enc_forward,
+            fn = self.func_enc_forward,
             sequences = dict(input=xt_lang_forward, taps=[0]),
             outputs_info = [
                 dict(initial=self.h0, taps=[-1]),
@@ -256,7 +258,7 @@ class NeuralWalker(object):
         )
         #
         [ht_enc_backward, ct_enc_backward], _ = theano.scan(
-            fn = func_enc_backward,
+            fn = self.func_enc_backward,
             sequences = dict(input=xt_lang_backward, taps=[0]),
             outputs_info = [
                 dict(initial=self.h0, taps=[-1]),
@@ -278,7 +280,7 @@ class NeuralWalker(object):
         )
         #
         [ht_dec, ct_dec, zt_dec], _ = theano.scan(
-            fn = func_dec,
+            fn = self.func_dec,
             sequences = dict(input=xt_world, taps=[0]),
             outputs_info = [
                 dict(initial=self.h0, taps=[-1]),
@@ -316,7 +318,7 @@ class NeuralWalker(object):
         print "checking the type of variables ... "
         print "type of cost is ", self.cost.dtype
         for param, gparam in zip(self.params, self.grad_params):
-            print "type of param and grad_param for this variable are : ", (param.name, param.dtype, gparam.dtype)
+            print "shape and type of param and grad_param for this variable are : ", (param.name, param.get_value().shape, param.dtype, gparam.dtype)
         #
 
     def get_model(self):

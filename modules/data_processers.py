@@ -99,8 +99,6 @@ class DataProcess(object):
             behind = 0
         elif behind == 450:
             behind = 90
-        else:
-            print "impossible direction !!! "
         return left, right, behind
 
 

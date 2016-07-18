@@ -271,7 +271,7 @@ class BeamSearchNeuralWalker(object):
         gate_pre_c_numpy = numpy.tanh(
             post_transform[3*self.dim_model:]
         )
-        ct_action = gate_forget_numpy * self.ctm1_action + gate_input_numpy * gate_pre_c_numpy
+        ct_action = gate_forget_numpy * ctm1_action + gate_input_numpy * gate_pre_c_numpy
         ht_action = gate_output_numpy * numpy.tanh(ct_action)
         #
         post_transform_prob = numpy.dot(
@@ -320,8 +320,6 @@ class BeamSearchNeuralWalker(object):
             behind = 0
         elif behind == 450:
             behind = 90
-        else:
-            print "impossible direction !!! "
         return left, right, behind
 
     #
@@ -437,6 +435,10 @@ class BeamSearchNeuralWalker(object):
                             self.take_one_step(
                                 item['pos_current'], top_idx_action
                             )
+                        )
+                        #
+                        new_item['pos_destination'] = numpy.copy(
+                            item['pos_destination']
                         )
                         #
                         new_item['feat_current_position'] = numpy.copy(

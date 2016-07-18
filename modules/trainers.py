@@ -48,6 +48,7 @@ class NeuralWalkerTrainer(object):
             self.seq_action
         )
         #
+        #
         assert(
             self.model_settings['optimizer'] == 'adam' or self.model_settings['optimizer'] == 'sgd'
         )
