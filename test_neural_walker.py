@@ -26,19 +26,15 @@ import run_model
 dtype=theano.config.floatX
 
 #
-input_trainer = {
-    'log_file': './log.dim100.txt',
+input_tester = {
+    #'log_file': './log.dim100.txt',
     'path_rawdata': None,
     #
-    'max_epoch': 50,
-    'dim_model': 100,
-    'path_start_model': None,
-    'save_file_path': './dim100.models/',
-    'optimizer': 'adam',
-    'maps_train': [
-        'grid', 'jelly'
-    ]
+    #'max_epoch': 50,
+    #'dim_model': 100,
+    'path_model': './dim100.models/model10.pkl',
+    'map_test': 'l'
 }
 
 #TODO: start training
-run_model.train_model(input_trainer)
+run_model.test_model(input_tester)
