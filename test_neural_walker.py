@@ -32,7 +32,7 @@ input_tester = {
     #
     #'max_epoch': 50,
     #'dim_model': 100,
-    'path_model': './dim100.models/model10.pkl',
+    'path_model': './dim100.models/model43.pkl',
     'map_test': 'l'
 }
 
