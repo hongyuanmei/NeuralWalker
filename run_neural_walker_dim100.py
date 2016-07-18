@@ -36,7 +36,7 @@ input_trainer = {
     'save_file_path': './dim100.models/',
     'optimizer': 'adam',
     'maps_train': [
-        'grid'#, 'jelly'
+        'grid', 'jelly'
     ]
 }
 
