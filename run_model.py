@@ -32,6 +32,8 @@ def train_model(input_trainer):
     #TODO: pre-settings like random states
     numpy.random.seed(12345)
     #
+    os.system('mkdir -p '+input_trainer['save_file_path'])
+    #
     log_dict = {
         'log_file': input_trainer['log_file'],
         'save_file_path': input_trainer['save_file_path'],
