@@ -279,6 +279,8 @@ def test_model(input_tester):
         bs_settings
     )
     #
+    bs_results = []
+    #
     for idx_data, data in enumerate(data_process.dict_data['dev'][name_map]):
         data_process.process_one_data(
             idx_data, name_map, 'dev'
@@ -297,6 +299,13 @@ def test_model(input_tester):
         #
         if bs.check_pos_end():
             cnt_success += 1
+        #
+        result = {
+            'path_ref': data['cleanpath'],
+            'path_gen': bs.get_path(),
+            'success': bs.check_pos_end()
+        }
+        bs_results.append(result)
         #
         bs.refresh_state()
         #
@@ -321,11 +330,31 @@ def test_model(input_tester):
         if bs.check_pos_end():
             cnt_success += 1
         #
+        #
+        if bs.check_pos_end():
+            cnt_success += 1
+        #
+        result = {
+            'path_ref': data['cleanpath'],
+            'path_gen': bs.get_path(),
+            'success': bs.check_pos_end()
+        }
+        bs_results.append(result)
+        #
+        #
         bs.refresh_state()
         #
     #
     #
     success_rate = round(1.0 * cnt_success / num_steps, 4)
+    #
+    if input_tester['file_save'] != None:
+        print "saving results ... "
+        assert('.pkl' in input_tester['file_save'])
+        with open(input_tester['file_save'], 'wb') as f:
+            pickle.dump(bs_results, f)
+    else:
+        print "No need to save results"
     #
     print "the # of paths in this map is : ", (num_steps, name_map)
     print "the success_rate is : ", success_rate

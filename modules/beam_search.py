@@ -491,6 +491,9 @@ class BeamSearchNeuralWalker(object):
     def count_path(self):
         print "# of finished responses is ", len(self.finish_list)
 
+    def get_path(self):
+        return self.finish_list[0]['list_pos']
+
     def check_pos_end(self):
         top_path = self.finish_list[0]
         diff_pos = numpy.sum(
