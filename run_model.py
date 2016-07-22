@@ -343,7 +343,7 @@ def test_model(input_tester):
         #
         #
         bs.refresh_state()
-        #
+        ##
     #
     #
     success_rate = round(1.0 * cnt_success / num_steps, 4)
