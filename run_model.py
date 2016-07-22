@@ -330,10 +330,6 @@ def test_model(input_tester):
         if bs.check_pos_end():
             cnt_success += 1
         #
-        #
-        if bs.check_pos_end():
-            cnt_success += 1
-        #
         result = {
             'path_ref': data['cleanpath'],
             'path_gen': bs.get_path(),
