@@ -497,7 +497,9 @@ class BeamSearchNeuralWalker(object):
     def check_pos_end(self):
         top_path = self.finish_list[0]
         diff_pos = numpy.sum(
-            top_path['pos_current'] - top_path['pos_destination']
+            numpy.abs(
+                top_path['pos_current'] - top_path['pos_destination']
+            )
         )
         if diff_pos < 0.5:
             return True
