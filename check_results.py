@@ -45,7 +45,13 @@ list_idx_tosee = [
 
 for idx_tosee in list_idx_tosee:
     result = success_results[idx_tosee]
+    print " "
     print "the reference path is : "
     print result['path_ref']
     print "the generated path is : "
     print result['path_gen']
+    print "the destination is : "
+    print result['pos_destination']
+    print "the current position is : "
+    print result['pos_current']
+    print " "
