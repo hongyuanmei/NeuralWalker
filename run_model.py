@@ -303,7 +303,9 @@ def test_model(input_tester):
         result = {
             'path_ref': data['cleanpath'],
             'path_gen': bs.get_path(),
-            'success': bs.check_pos_end()
+            'success': bs.check_pos_end(),
+            'pos_current': bs.finish_list[0]['pos_current'],
+            'pos_destination': bs.finish_list[0]['pos_destination']
         }
         bs_results.append(result)
         #
