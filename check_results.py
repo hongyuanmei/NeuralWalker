@@ -43,7 +43,8 @@ list_idx_tosee = [
     0, 5, 10, 15, 20
 ]
 
-for result in success_results:
+for idx_tosee in list_idx_tosee:
+    result = success_results[idx_tosee]
     print "the reference path is : "
     print result['path_ref']
     print "the generated path is : "
