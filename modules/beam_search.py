@@ -52,7 +52,7 @@ class BeamSearchNeuralWalker(object):
         assert(
             self.drop_out_rate <= numpy.float32(1.0)
         )
-        self.model['W_out_hz'] = numpy.copy(
+        self.model['W_out_hz'][:self.dim_model, :] = numpy.copy(
             self.model['W_out_hz'][:self.dim_model, :] * self.drop_out_rate
         )
         #
@@ -517,10 +517,11 @@ class BeamSearchNeuralWalker(object):
             return False
 
 
+'''
 #TODO: beam search for neural walker, ensemble of models
 class BeamSearchNeuralWalkerEnsemble(object):
     '''
-    This is a beam search code for Neural Walker
+    #This is a beam search code for Neural Walker
     '''
     def __init__(self, settings):
         print "initializing the beam searcher ... "
@@ -528,19 +529,26 @@ class BeamSearchNeuralWalkerEnsemble(object):
         self.size_beam = settings['size_beam']
         #
         assert(
-            settings['path_model'] == None or settings['trained_model'] == None
+            settings['set_path_model'] != None
         )
         #
-        if settings['path_model'] != None:
-            with open(settings['path_model'], 'rb') as f:
-                self.model = pickle.load(f)
-        else:
-            assert(settings['trained_model']!=None)
-            self.model = settings['trained_model']
+        self.list_models = []
+        for path_model in settings['set_path_model']:
+            with open(path_model, 'rb') as f:
+                self.list_models.append(
+                    pickle.load(f)
+                )
         #
-        # convert float64 to float32
-        for param_name in self.model:
-            self.model[param_name] = numpy.float32(self.model[param_name])
+        for model in self.list_models:
+            for param_name in model:
+                model[param_name] = numpy.float32(
+                    model[param_name]
+                )
+            model['dim_model'] = model['Emb_enc_forward'].shape[1]
+        #
+
+
+        #
         #
         self.dim_model = self.model['Emb_enc_forward'].shape[1]
         #
@@ -1014,6 +1022,7 @@ class BeamSearchNeuralWalkerEnsemble(object):
             return False
 
 
+'''
 
 
 '''
