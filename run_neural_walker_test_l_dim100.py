@@ -30,7 +30,7 @@ input_trainer = {
     'log_file': './log.test.l.dim100.090.txt',
     'path_rawdata': None,
     #
-    'random_seed': 12345
+    'random_seed': 12345,
     #
     'max_epoch': 100,
     'dim_model': 100,
