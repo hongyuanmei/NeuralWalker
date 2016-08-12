@@ -27,13 +27,16 @@ dtype=theano.config.floatX
 
 #
 input_trainer = {
-    'log_file': './log.test.jelly.dim100.txt',
+    'log_file': './log.test.jelly.dim100.090.txt',
     'path_rawdata': None,
+    #
+    'random_seed': 12345
     #
     'max_epoch': 100,
     'dim_model': 100,
+    'drop_out_rate': numpy.float32(0.9),
     'path_start_model': None,
-    'save_file_path': './test.jelly.dim100.models/',
+    'save_file_path': './test.jelly.dim100.090.models/',
     'optimizer': 'adam',
     'maps_train': [
         'grid', 'l'

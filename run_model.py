@@ -30,7 +30,9 @@ def train_model(input_trainer):
     this function is called to train model
     '''
     #TODO: pre-settings like random states
-    numpy.random.seed(12345)
+    numpy.random.seed(
+        input_trainer['random_seed']#12345
+    )
     #
     os.system('mkdir -p '+input_trainer['save_file_path'])
     #
@@ -80,7 +82,8 @@ def train_model(input_trainer):
         'dim_world': data_process.dim_world,
         'dim_action': data_process.dim_action,
         'dim_model': input_trainer['dim_model'],
-        'optimizer': input_trainer['optimizer']
+        'optimizer': input_trainer['optimizer'],
+        'drop_out_rate': input_trainer['drop_out_rate']
     }
 
     trainer = trainers.NeuralWalkerTrainer(

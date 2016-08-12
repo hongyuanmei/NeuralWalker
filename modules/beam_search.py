@@ -47,6 +47,16 @@ class BeamSearchNeuralWalker(object):
         #
         self.dim_model = self.model['Emb_enc_forward'].shape[1]
         #
+        # re-set the weights due to drop_out_rate
+        self.drop_out_rate = model['drop_out_rate']
+        assert(
+            self.drop_out_rate <= numpy.float32(1.0)
+        )
+        self.model['W_out_hz'] = numpy.copy(
+            self.model['W_out_hz'][:self.dim_model, :] * self.drop_out_rate
+        )
+        #
+        #
         self.ht_encode = numpy.zeros(
             (self.dim_model, ), dtype=dtype
         )
@@ -505,6 +515,7 @@ class BeamSearchNeuralWalker(object):
             return True
         else:
             return False
+
 
 
 '''

@@ -38,6 +38,18 @@ class NeuralWalker(object):
         self.dim_lang = model_settings['dim_lang']
         self.dim_action = model_settings['dim_action']
         #
+        # drop_out related stuff
+        self.drop_out_rate = model_settings['drop_out_rate']
+        assert(
+            self.drop_out_rate <= numpy.float32(1.0)
+        )
+        self.rnd_gen = RandomStreams(seed=12345)
+        self.drop_out_layer = self.rnd_gen.uniform((self.dim_model,)) < self.drop_out_rate
+        self.drop_out_layer_gen = theano.function(
+            [], self.drop_out_layer
+        )
+        #
+        #
         print "dim of model, world, lang and action is : ", self.dim_model, self.dim_world, self.dim_lang, self.dim_action
         #
         self.Emb_lang_sparse = theano.shared(
@@ -233,7 +245,10 @@ class NeuralWalker(object):
         ct = gate_forget * ctm1 + gate_input * gate_pre_c
         ht = gate_output * tensor.tanh(ct)
         #
-        return ht, ct, zt
+        # use drop_out
+        ht_dropout = ht * self.drop_out_layer_gen()
+        #
+        return ht, ht_dropout, ct, zt
 
     def compute_loss(self, seq_lang, seq_world, seq_action):
         print "computing the loss function of Neural Walker ... "
@@ -279,13 +294,12 @@ class NeuralWalker(object):
             self.scope_att, self.W_att_scope
         )
         #
-        [ht_dec, ct_dec, zt_dec], _ = theano.scan(
+        [ht_dec, ht_dropout_dec, ct_dec, zt_dec], _ = theano.scan(
             fn = self.func_dec,
             sequences = dict(input=xt_world, taps=[0]),
             outputs_info = [
-                dict(initial=self.h0, taps=[-1]),
-                dict(initial=self.c0, taps=[-1]),
-                None
+                dict(initial=self.h0, taps=[-1]), None,
+                dict(initial=self.c0, taps=[-1]), None
             ],
             non_sequences = None
         )
@@ -293,7 +307,7 @@ class NeuralWalker(object):
         post_transform = theano.dot(
             xt_world + theano.dot(
                 tensor.concatenate(
-                    [ht_dec, zt_dec], axis=1
+                    [ht_dropout_dec, zt_dec], axis=1
                 ),
                 self.W_out_hz
             ),
@@ -328,6 +342,7 @@ class NeuralWalker(object):
             model_dict[param.name] = numpy.copy(
                 param.get_value()
             )
+        model_dict['drop_out_rate'] = self.drop_out_rate
         return model_dict
 
     def save_model(self, save_file):
@@ -337,5 +352,6 @@ class NeuralWalker(object):
             model_dict[param.name] = numpy.copy(
                 param.get_value()
             )
+        model_dict['drop_out_rate'] = self.drop_out_rate
         with open(save_file, 'wb') as f:
             pickle.dump(model_dict, f)
