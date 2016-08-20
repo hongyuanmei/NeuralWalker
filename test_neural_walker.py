@@ -32,9 +32,9 @@ input_tester = {
     #
     #'max_epoch': 50,
     #'dim_model': 100,
-    'path_model': './test.l.dim100.models/model43.pkl',
-    'map_test': 'l',
-    'file_save': './test.l.dim100.results.pkl'
+    'path_model': './test.grid.dim100.090.0.models/model62.pkl',
+    'map_test': 'grid',
+    'file_save': './test.grid.dim100.090.0.results.pkl'
 }
 
 #TODO: start training
