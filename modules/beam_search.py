@@ -694,10 +694,12 @@ class BeamSearchNeuralWalkerEnsemble(object):
             self.set_encoder_backward(idx_model)
             model['scope_att'] = numpy.copy(
                 numpy.concatenate(
-                    self.Emb_lang_sparse[self.seq_lang_numpy, :],
-                    self.ht_enc_forward,
-                    self.ht_enc_backward[::-1, :]
-                ), axis=1
+                    (
+                        self.Emb_lang_sparse[self.seq_lang_numpy, :],
+                        self.ht_enc_forward,
+                        self.ht_enc_backward[::-1, :]
+                    ), axis=1
+                )
             )
             model['scope_att_times_W'] = numpy.dot(
                 model['scope_att'], model['W_att_scope']
