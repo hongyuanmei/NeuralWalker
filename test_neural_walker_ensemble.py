@@ -33,7 +33,11 @@ input_tester = {
     #'max_epoch': 50,
     #'dim_model': 100,
     'set_path_model': [
-        './test.grid.dim100.090.0.models/model62.pkl'
+        './test.grid.dim100.090.0.models/model62.pkl',
+        './test.grid.dim100.090.1.models/model16.pkl',
+        './test.grid.dim100.090.2.models/model48.pkl',
+        './test.grid.dim100.090.3.models/model54.pkl',
+        './test.grid.dim100.090.4.models/model26.pkl'
     ],
     'map_test': 'grid',
     'file_save': './test.grid.dim100.090.ensemble.results.pkl'
