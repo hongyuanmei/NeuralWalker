@@ -517,11 +517,11 @@ class BeamSearchNeuralWalker(object):
             return False
 
 
-'''
+#'''
 #TODO: beam search for neural walker, ensemble of models
 class BeamSearchNeuralWalkerEnsemble(object):
     '''
-    #This is a beam search code for Neural Walker
+    # This is a beam search code for Neural Walker
     '''
     def __init__(self, settings):
         print "initializing the beam searcher ... "
@@ -545,39 +545,29 @@ class BeamSearchNeuralWalkerEnsemble(object):
                     model[param_name]
                 )
             model['dim_model'] = model['Emb_enc_forward'].shape[1]
-        #
-
-
-        #
-        #
-        self.dim_model = self.model['Emb_enc_forward'].shape[1]
-        #
-        # re-set the weights due to drop_out_rate
-        self.drop_out_rate = self.model['drop_out_rate']
-        assert(
-            self.drop_out_rate <= numpy.float32(1.0)
-        )
-        self.model['W_out_hz'] = numpy.copy(
-            self.model['W_out_hz'][:self.dim_model, :] * self.drop_out_rate
-        )
-        #
-        #
-        self.ht_encode = numpy.zeros(
-            (self.dim_model, ), dtype=dtype
-        )
-        self.ct_encode = numpy.zeros(
-            (self.dim_model, ), dtype=dtype
-        )
-        #
-        self.scope_att = None
-        self.scope_att_times_W = None
+            assert(
+                model['drop_out_rate'] <= numpy.float32(1.0)
+            )
+            model['W_out_hz'][:model['dim_model'], :] = numpy.copy(
+                model['W_out_hz'][:model['dim_model'], :] * model['drop_out_rate']
+            )
+            #
+            model['ht_encode'] = numpy.zeros(
+                (model['dim_model'], ), dtype=dtype
+            )
+            model['ct_encode'] = numpy.zeros(
+                (model['dim_model'], ), dtype=dtype
+            )
+            #
+            model['scope_att'] = None
+            model['scope_att_times_W'] = None
+            #
         #
         self.beam_list = []
         self.finish_list = []
         #self.normalize_mode = settings['normalize_mode']
         # whether to normalize the cost over length of sequence
         #
-        #self.lang2idx = settings['lang2idx']
         self.dim_lang = settings['dim_lang']
         self.map = settings['map']
         self.Emb_lang_sparse = numpy.identity(
@@ -588,15 +578,15 @@ class BeamSearchNeuralWalkerEnsemble(object):
 
     def refresh_state(self):
         print "refreshing the states of beam search ... "
-        self.ht_encode = numpy.zeros(
-            (self.dim_model, ), dtype=dtype
-        )
-        self.ct_encode = numpy.zeros(
-            (self.dim_model, ), dtype=dtype
-        )
-        #
-        self.scope_att = None
-        self.scope_att_times_W = None
+        for model in self.list_models:
+            model['ht_encode'] = numpy.zeros(
+                (model['dim_model'], ), dtype=dtype
+            )
+            model['ct_encode'] = numpy.zeros(
+                (model['dim_model'], ), dtype=dtype
+            )
+            model['scope_att'] = None
+            model['scope_att_times_W'] = None
         #
         self.beam_list = []
         self.finish_list = []
@@ -605,8 +595,9 @@ class BeamSearchNeuralWalkerEnsemble(object):
     def sigmoid(self, x):
         return 1 / (1+numpy.exp(-x))
     #
-    def set_encoder_forward(self):
-        xt_lang_forward = self.model['Emb_enc_forward'][
+    def set_encoder_forward(self, idx_model):
+        dim_model = self.list_models[idx_model]['dim_model']
+        xt_lang_forward = self.list_models[idx_model]['Emb_enc_forward'][
             self.seq_lang_numpy, :
         ]
         shape_encode = xt_lang_forward.shape
@@ -618,7 +609,7 @@ class BeamSearchNeuralWalkerEnsemble(object):
         )
         len_lang = shape_encode[0]
         for time_stamp in range(-1, len_lang-1, 1):
-            post_transform = self.model['b_enc_forward'] + numpy.dot(
+            post_transform = self.list_models[idx_model]['b_enc_forward'] + numpy.dot(
                 numpy.concatenate(
                     (
                         xt_lang_forward[time_stamp+1, :],
@@ -626,20 +617,20 @@ class BeamSearchNeuralWalkerEnsemble(object):
                     ),
                     axis=0
                 ),
-                self.model['W_enc_forward']
+                self.list_models[idx_model]['W_enc_forward']
             )
             #
             gate_input_numpy = self.sigmoid(
-                post_transform[:self.dim_model]
+                post_transform[:dim_model]
             )
             gate_forget_numpy = self.sigmoid(
-                post_transform[self.dim_model:2*self.dim_model]
+                post_transform[dim_model:2*dim_model]
             )
             gate_output_numpy = self.sigmoid(
-                post_transform[2*self.dim_model:3*self.dim_model]
+                post_transform[2*dim_model:3*dim_model]
             )
             gate_pre_c_numpy = numpy.tanh(
-                post_transform[3*self.dim_model:]
+                post_transform[3*dim_model:]
             )
             self.ct_enc_forward[time_stamp+1, :] = gate_forget_numpy * self.ct_enc_forward[time_stamp, :] + gate_input_numpy * gate_pre_c_numpy
             self.ht_enc_forward[time_stamp+1, :] = gate_output_numpy * numpy.tanh(self.ct_enc_forward[time_stamp+1, :])
@@ -647,8 +638,9 @@ class BeamSearchNeuralWalkerEnsemble(object):
         #
     #
     ##
-    def set_encoder_backward(self):
-        xt_lang_backward = self.model['Emb_enc_backward'][
+    def set_encoder_backward(self, idx_model):
+        dim_model = self.list_models[idx_model]['dim_model']
+        xt_lang_backward = self.list_models[idx_model]['Emb_enc_backward'][
             self.seq_lang_numpy, :
         ][::-1, :]
         shape_encode = xt_lang_backward.shape
@@ -660,7 +652,7 @@ class BeamSearchNeuralWalkerEnsemble(object):
         )
         len_lang = shape_encode[0]
         for time_stamp in range(-1, len_lang-1, 1):
-            post_transform = self.model['b_enc_backward'] + numpy.dot(
+            post_transform = self.list_models[idx_model]['b_enc_backward'] + numpy.dot(
                 numpy.concatenate(
                     (
                         xt_lang_backward[time_stamp+1, :],
@@ -668,20 +660,20 @@ class BeamSearchNeuralWalkerEnsemble(object):
                     ),
                     axis=0
                 ),
-                self.model['W_enc_backward']
+                self.list_models[idx_model]['W_enc_backward']
             )
             #
             gate_input_numpy = self.sigmoid(
-                post_transform[:self.dim_model]
+                post_transform[:dim_model]
             )
             gate_forget_numpy = self.sigmoid(
-                post_transform[self.dim_model:2*self.dim_model]
+                post_transform[dim_model:2*dim_model]
             )
             gate_output_numpy = self.sigmoid(
-                post_transform[2*self.dim_model:3*self.dim_model]
+                post_transform[2*dim_model:3*dim_model]
             )
             gate_pre_c_numpy = numpy.tanh(
-                post_transform[3*self.dim_model:]
+                post_transform[3*dim_model:]
             )
             self.ct_enc_backward[time_stamp+1, :] = gate_forget_numpy * self.ct_enc_backward[time_stamp, :] + gate_input_numpy * gate_pre_c_numpy
             self.ht_enc_backward[time_stamp+1, :] = gate_output_numpy * numpy.tanh(self.ct_enc_backward[time_stamp+1, :])
@@ -697,27 +689,31 @@ class BeamSearchNeuralWalkerEnsemble(object):
         self.seq_lang_numpy = seq_lang_numpy
         self.seq_world_numpy = seq_world_numpy
         #
-        self.set_encoder_forward()
-        self.set_encoder_backward()
-        self.scope_att = numpy.concatenate(
-            (
-                self.Emb_lang_sparse[self.seq_lang_numpy, :],
-                self.ht_enc_forward,
-                self.ht_enc_backward[::-1, :]
-            ),
-            axis=1
-        )
-        self.scope_att_times_W = numpy.dot(
-            self.scope_att, self.model['W_att_scope']
-        )
+        for idx_model, model in enumerate(self.list_models):
+            self.set_encoder_forward(idx_model)
+            self.set_encoder_backward(idx_model)
+            model['scope_att'] = numpy.copy(
+                numpy.concatenate(
+                    self.Emb_lang_sparse[self.seq_lang_numpy, :],
+                    self.ht_enc_forward,
+                    self.ht_enc_backward[::-1, :]
+                ), axis=1
+            )
+            model['scope_att_times_W'] = numpy.dot(
+                model['scope_att'], model['W_att_scope']
+            )
+        #
         #self.ht_encode = ht_source[:, 0]
         #
+
 
     def init_beam(self, pos_start, pos_end):
         print "initialize beam ... "
         item  = {
-            'htm1': numpy.copy(self.ht_encode),
-            'ctm1': numpy.copy(self.ct_encode),
+            #'htm1': numpy.copy(self.ht_encode),
+            #'ctm1': numpy.copy(self.ct_encode),
+            'list_htm1': [],
+            'list_ctm1': [],
             'feat_current_position': numpy.copy(
                 self.seq_world_numpy[0, :]
             ),
@@ -731,6 +727,15 @@ class BeamSearchNeuralWalkerEnsemble(object):
             #
             'cost': 0.00
         }
+        #
+        for model in self.list_models:
+            item['list_htm1'].append(
+                numpy.copy(model['ht_encode'])
+            )
+            item['list_ctm1'].append(
+                numpy.copy(model['ct_encode'])
+            )
+        #
         self.beam_list.append(item)
 
     def softmax(self, x):
@@ -740,51 +745,54 @@ class BeamSearchNeuralWalkerEnsemble(object):
 
     def decode_step(
         self, feat_current_position,
-        htm1_action, ctm1_action
+        htm1_action, ctm1_action,
+        idx_model
     ):
+        #
+        dim_model = self.list_models[idx_model]['dim_model']
         #
         xt_action = numpy.dot(
             feat_current_position,
-            self.model['Emb_dec']
+            self.list_models[idx_model]['Emb_dec']
         )
         # neural attention operations first
         weight_current_step = self.softmax(
             numpy.dot(
                 numpy.tanh(
                     numpy.dot(
-                        htm1_action, self.model['W_att_target']
-                    ) + self.scope_att_times_W
+                        htm1_action, self.list_models[idx_model]['W_att_target']
+                    ) + self.list_models[idx_model]['scope_att_times_W']
                 ),
-                self.model['b_att']
+                self.list_models[idx_model]['b_att']
             )
         )
         #
         zt_action = numpy.dot(
             weight_current_step,
-            self.scope_att
+            self.list_models[idx_model]['scope_att']
         )
         #
-        post_transform = self.model['b_dec'] + numpy.dot(
+        post_transform = self.list_models[idx_model]['b_dec'] + numpy.dot(
             numpy.concatenate(
                 (
                     xt_action, htm1_action, zt_action
                 ),
                 axis=0
             ),
-            self.model['W_dec']
+            self.list_models[idx_model]['W_dec']
         )
         #
         gate_input_numpy = self.sigmoid(
-            post_transform[:self.dim_model]
+            post_transform[:dim_model]
         )
         gate_forget_numpy = self.sigmoid(
-            post_transform[self.dim_model:2*self.dim_model]
+            post_transform[dim_model:2*dim_model]
         )
         gate_output_numpy = self.sigmoid(
-            post_transform[2*self.dim_model:3*self.dim_model]
+            post_transform[2*dim_model:3*dim_model]
         )
         gate_pre_c_numpy = numpy.tanh(
-            post_transform[3*self.dim_model:]
+            post_transform[3*dim_model:]
         )
         ct_action = gate_forget_numpy * ctm1_action + gate_input_numpy * gate_pre_c_numpy
         ht_action = gate_output_numpy * numpy.tanh(ct_action)
@@ -794,9 +802,9 @@ class BeamSearchNeuralWalkerEnsemble(object):
                 numpy.concatenate(
                     (ht_action, zt_action), axis=0
                 ),
-                self.model['W_out_hz']
+                self.list_models[idx_model]['W_out_hz']
             ),
-            self.model['W_out']
+            self.list_models[idx_model]['W_out']
         )
         #
         exp_post_trans = numpy.exp(
@@ -919,22 +927,43 @@ class BeamSearchNeuralWalkerEnsemble(object):
         # this position must be in this map
         #
 
+
     def search_func(self):
         print "search for target ... "
         counter, max_counter = 0, 100
         while ((len(self.finish_list)<self.size_beam) and (counter<max_counter) ):
             new_list = []
             for item in self.beam_list:
-                xt_item, ht_item, ct_item, probt_item, log_probt_item = self.decode_step(
-                    item['feat_current_position'],
-                    item['htm1'], item['ctm1']
+                #
+                list_probt = []
+                list_ht, list_ct = [], []
+                #
+                for idx_model, model in self.list_models:
+                    xt_item_model, ht_item_model, ct_item_model, probt_item_model, log_probt_item_model = self.decode_step(
+                        item['feat_current_position'],
+                        item['list_htm1'][idx_model],
+                        item['list_ctm1'][idx_model],
+                        idx_model
+                    )
+                    list_probt.append(numpy.copy(probt_item_model))
+                    list_ht.append(numpy.copy(ht_item_model))
+                    list_ct.append(numpy.copy(ct_item_model))
+                probt_item = numpy.mean(
+                    numpy.array(list_probt), axis = 0
+                )
+                log_probt_item = numpy.log(
+                    probt_item + numpy.float32(1e-8)
                 )
                 top_k_list = range(probt_item.shape[0])
                 for top_idx_action in top_k_list:
                     if self.validate_step(top_idx_action, item['feat_current_position']):
                         new_item = {
-                            'htm1': numpy.copy(ht_item),
-                            'ctm1': numpy.copy(ct_item),
+                            'list_htm1': [
+                                numpy.copy(ht_item_model) for ht_item_model in list_ht
+                            ],
+                            'list_ctm1': [
+                                numpy.copy(ct_item_model) for ct_item_model in list_ct
+                            ],
                             'list_idx_action': [
                                 idx for idx in item['list_idx_action']
                             ],
@@ -1022,61 +1051,4 @@ class BeamSearchNeuralWalkerEnsemble(object):
             return False
 
 
-'''
-
-
-'''
-    def get_top_target(self):
-        print "getting top target as list of token_id ... "
-        return self.finish_list[0]['list_idx_token'][1:-1]
-
-    def get_all_gens(self):
-        list_seq_as_list = []
-        for item in self.finish_list:
-            list_seq_as_list.append(
-                [idx for idx in item['list_idx_token'][1:-1]]
-            )
-        #print list_seq_as_list
-        return list_seq_as_list
-    #
-    def get_top_target_score(self):
-        print "getting top target score as a value ... "
-        if self.normalize_mode:
-            return self.finish_list[0]['norm_cost']
-        else:
-            return self.finish_list[0]['cost']
-
-    def get_all_gens_scores(self):
-        list_scores_as_values = []
-        for item in self.finish_list:
-            if self.normalize_mode:
-                score_value = item['norm_cost']
-            else:
-                score_value = item['cost']
-            list_scores_as_values.append(
-                score_value
-            )
-        return list_scores_as_values
-
-    def get_att_weights(self, idx_in_beam):
-        #
-        list_att_weights = [
-            numpy.copy(att_weight) for att_weight in self.finish_list[
-                idx_in_beam
-            ]['list_att']
-        ]
-        return list_att_weights
-    #
-    def get_all_att_weights(self):
-        list_all_att_weights = []
-        for finish_item in self.finish_list:
-            list_all_att_weights.append(
-                [
-                    numpy.copy(att_weight) for att_weight in finish_item[
-                        'list_att'
-                    ]
-                ]
-            )
-        return list_all_att_weights
-
-'''
+#'''

@@ -363,3 +363,130 @@ def test_model(input_tester):
     print "the success_rate is : ", success_rate
     #
     print "finish testing !!! "
+
+
+def test_model_ensemble(input_tester):
+    '''
+    this function is called to test ensemble model
+    '''
+    #TODO: pre-settings like random states
+    numpy.random.seed(12345)
+    #
+
+    #TODO: get the data and process the data
+    print "reading and processing data ... "
+
+    data_process = data_processers.DataProcess(
+        path_rawdata=input_tester['path_rawdata']
+    )
+    #
+    #TODO: build another data process for Greedy search, i.e., gs
+    ##
+    bs_settings = {
+        'size_beam': 1, # greedy search
+        'set_path_model': input_tester['set_path_model'],
+        #'trained_model': None,
+        'dim_lang': data_process.dim_lang,
+        'map': data_process.maps[
+            data_process.map2idx[input_tester['map_test']]
+        ]
+    }
+    #
+    #TODO: build the model
+    print "building model ... "
+    #
+    #
+    name_map = input_tester['map_test']
+    #
+    cnt_success = 0
+    num_steps = len(
+        data_process.dict_data['dev'][name_map]
+    ) + len(
+        data_process.dict_data['train'][name_map]
+    )
+    #
+    bs = beam_search.BeamSearchNeuralWalkerEnsemble(
+        bs_settings
+    )
+    #
+    bs_results = []
+    #
+    for idx_data, data in enumerate(data_process.dict_data['dev'][name_map]):
+        data_process.process_one_data(
+            idx_data, name_map, 'dev'
+        )
+        bs.set_encoder(
+            data_process.seq_lang_numpy,
+            data_process.seq_world_numpy
+        )
+        pos_start, pos_end = data_process.get_pos(
+            idx_data, name_map, 'dev'
+        )
+        bs.init_beam(
+            numpy.copy(pos_start), numpy.copy(pos_end)
+        )
+        bs.search_func()
+        #
+        if bs.check_pos_end():
+            cnt_success += 1
+        #
+        result = {
+            'path_ref': data['cleanpath'],
+            'path_gen': bs.get_path(),
+            'success': bs.check_pos_end(),
+            'pos_current': bs.finish_list[0]['pos_current'],
+            'pos_destination': bs.finish_list[0]['pos_destination']
+        }
+        bs_results.append(result)
+        #
+        bs.refresh_state()
+        #
+    #
+    #
+    for idx_data, data in enumerate(data_process.dict_data['train'][name_map]):
+        data_process.process_one_data(
+            idx_data, name_map, 'train'
+        )
+        bs.set_encoder(
+            data_process.seq_lang_numpy,
+            data_process.seq_world_numpy
+        )
+        pos_start, pos_end = data_process.get_pos(
+            idx_data, name_map, 'train'
+        )
+        bs.init_beam(
+            numpy.copy(pos_start), numpy.copy(pos_end)
+        )
+        bs.search_func()
+        #
+        if bs.check_pos_end():
+            cnt_success += 1
+        #
+        result = {
+            'path_ref': data['cleanpath'],
+            'path_gen': bs.get_path(),
+            'success': bs.check_pos_end(),
+            'pos_current': bs.finish_list[0]['pos_current'],
+            'pos_destination': bs.finish_list[0]['pos_destination']
+        }
+        bs_results.append(result)
+        #
+        #
+        bs.refresh_state()
+        ##
+    #
+    #
+    success_rate = round(1.0 * cnt_success / num_steps, 4)
+    #
+    if input_tester['file_save'] != None:
+        print "saving results ... "
+        assert('.pkl' in input_tester['file_save'])
+        with open(input_tester['file_save'], 'wb') as f:
+            pickle.dump(bs_results, f)
+    else:
+        print "No need to save results"
+    #
+    print "the # of paths in this map is : ", (num_steps, name_map)
+    print "the success_rate is : ", success_rate
+    #
+    print "finish testing !!! "
