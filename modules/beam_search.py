@@ -940,7 +940,7 @@ class BeamSearchNeuralWalkerEnsemble(object):
                 list_probt = []
                 list_ht, list_ct = [], []
                 #
-                for idx_model, model in self.list_models:
+                for idx_model, model in enumerate(self.list_models):
                     xt_item_model, ht_item_model, ct_item_model, probt_item_model, log_probt_item_model = self.decode_step(
                         item['feat_current_position'],
                         item['list_htm1'][idx_model],
