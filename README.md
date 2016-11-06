@@ -1,4 +1,4 @@
-# SelectiveGeneration
+# NeuralWalker
 Code base for [Mei et al. AAAI 2016 paper](https://arxiv.org/abs/1506.04089)
 
 ## Dependencies
