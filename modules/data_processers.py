@@ -184,33 +184,48 @@ class DataProcess(object):
             )
         # finished processing !
     #
-    #
     def creat_log(self, log_dict):
-        '''
-        log dict keys : log_file, compile_time, things need to be tracked
-        '''
         print "creating training log file ... "
-        with open(log_dict['log_file'], 'w') as f:
+        current_log_file = os.path.abspath(
+            log_dict['log_file']
+        )
+        with open(current_log_file, 'w') as f:
             f.write('This the training log file. \n')
-            f.write('It tracks some statistics in the training process ... ')
+            f.write('It tracks some statistics in the training process ... \n')
+            #
+            f.write('Model specs are listed below : \n')
+            for the_key in log_dict['args']:
+                f.write(
+                    the_key+' : '+str(log_dict['args'][the_key])
+                )
+                f.write('\n')
+            #
             f.write('Before training, the compilation time is '+str(log_dict['compile_time'])+' sec ... \n')
             f.write('Things that need to be tracked : \n')
             for the_key in log_dict['tracked']:
                 f.write(the_key+' ')
             f.write('\n\n')
         #
+    #
 
     def continue_log(self, log_dict):
         print "continue tracking log ... "
-        with open(log_dict['log_file'], 'a') as f:
+        current_log_file = os.path.abspath(
+            log_dict['log_file']
+        )
+        with open(current_log_file, 'a') as f:
             for the_key in log_dict['tracked']:
                 f.write(the_key+' is '+str(log_dict['tracked'][the_key])+' \n')
-            #
-            # early_stop applied due to success_rate
             #
             if log_dict['max_dev_rate'] < log_dict['tracked']['dev_rate']:
                 f.write('This is a new best model ! \n')
                 log_dict['max_dev_rate'] = log_dict['tracked']['dev_rate']
+                # update the best
+                for the_key in log_dict['tracked']:
+                    log_dict['tracked_best'][
+                        the_key
+                    ] = log_dict['tracked'][the_key]
+                #
             f.write('\n')
 
     def track_log(self, log_dict):
@@ -223,7 +238,21 @@ class DataProcess(object):
             self.creat_log(log_dict)
         else:
             self.continue_log(log_dict)
-
+    #
+    def finish_log(self, log_dict):
+        print "finish tracking log ... "
+        current_log_file = os.path.abspath(
+            log_dict['log_file']
+        )
+        with open(current_log_file, 'a') as f:
+            f.write('The best model info is shown below : \n')
+            for the_key in log_dict['tracked_best']:
+                f.write(
+                    the_key+' is '+str(log_dict['tracked_best'][the_key])+' \n'
+                )
+                #
+            f.write('\n')
+    #
 
 #'''
 

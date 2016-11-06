@@ -26,7 +26,7 @@ class BeamSearchNeuralWalker(object):
     This is a beam search code for Neural Walker
     '''
     def __init__(self, settings):
-        print "initializing the beam searcher ... "
+        #print "initializing the beam searcher ... "
         assert (settings['size_beam'] >= 1)
         self.size_beam = settings['size_beam']
         #
@@ -82,7 +82,7 @@ class BeamSearchNeuralWalker(object):
 
 
     def refresh_state(self):
-        print "refreshing the states of beam search ... "
+        #print "refreshing the states of beam search ... "
         self.ht_encode = numpy.zeros(
             (self.dim_model, ), dtype=dtype
         )
@@ -209,7 +209,7 @@ class BeamSearchNeuralWalker(object):
         #
 
     def init_beam(self, pos_start, pos_end):
-        print "initialize beam ... "
+        #print "initialize beam ... "
         item  = {
             'htm1': numpy.copy(self.ht_encode),
             'ctm1': numpy.copy(self.ct_encode),
@@ -415,7 +415,7 @@ class BeamSearchNeuralWalker(object):
         #
 
     def search_func(self):
-        print "search for target ... "
+        #print "search for target ... "
         counter, max_counter = 0, 100
         while ((len(self.finish_list)<self.size_beam) and (counter<max_counter) ):
             new_list = []
@@ -524,7 +524,7 @@ class BeamSearchNeuralWalkerEnsemble(object):
     # This is a beam search code for Neural Walker
     '''
     def __init__(self, settings):
-        print "initializing the beam searcher ... "
+        #print "initializing the beam searcher ... "
         assert (settings['size_beam'] >= 1)
         self.size_beam = settings['size_beam']
         #
@@ -577,7 +577,7 @@ class BeamSearchNeuralWalkerEnsemble(object):
 
 
     def refresh_state(self):
-        print "refreshing the states of beam search ... "
+        #print "refreshing the states of beam search ... "
         for model in self.list_models:
             model['ht_encode'] = numpy.zeros(
                 (model['dim_model'], ), dtype=dtype
@@ -710,7 +710,7 @@ class BeamSearchNeuralWalkerEnsemble(object):
 
 
     def init_beam(self, pos_start, pos_end):
-        print "initialize beam ... "
+        #print "initialize beam ... "
         item  = {
             #'htm1': numpy.copy(self.ht_encode),
             #'ctm1': numpy.copy(self.ct_encode),
@@ -931,7 +931,7 @@ class BeamSearchNeuralWalkerEnsemble(object):
 
 
     def search_func(self):
-        print "search for target ... "
+        #print "search for target ... "
         counter, max_counter = 0, 100
         while ((len(self.finish_list)<self.size_beam) and (counter<max_counter) ):
             new_list = []

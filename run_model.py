@@ -43,6 +43,9 @@ def train_model(input_trainer):
         #
         'max_dev_rate': -1.0,
         #
+        'args': input_trainer['args'],
+        'tracked_best': {},
+        #
         'max_epoch': input_trainer['max_epoch'],
         #'size_batch': input_trainer['size_batch'],
         'tracked': {
@@ -127,7 +130,8 @@ def train_model(input_trainer):
                     data_process.seq_action_numpy
                 )
                 err += cost_numpy
-                print "training i-th out of N in map : ", (idx_data, max_steps, name_map)
+                if idx_data % 100 == 99:
+                    print "training i-th out of N in map : ", (idx_data, max_steps, name_map)
             #
             num_steps += max_steps
         #
@@ -161,7 +165,8 @@ def train_model(input_trainer):
                     data_process.seq_action_numpy
                 )
                 err += cost_numpy
-                print "validating i-th out of N in map : ", (idx_data, max_steps, name_map)
+                if idx_data % 100 == 99:
+                    print "validating i-th out of N in map : ", (idx_data, max_steps, name_map)
             #
             num_steps += max_steps
         #
@@ -225,11 +230,14 @@ def train_model(input_trainer):
         #
         #
         if log_dict['tracked']['dev_rate'] > log_dict['max_dev_rate']:
-            save_file = log_dict['save_file_path'] + 'model' + str(log_dict['tracked']['track_cnt']) + '.pkl'
+            save_file = log_dict[
+                'save_file_path'
+            ] + 'model' + '.pkl'
             trainer.save_model(save_file)
         #
         data_process.track_log(log_dict)
         #
+    data_process.finish_log(log_dict)
     print "finish training"
     # function finished
 # training finished

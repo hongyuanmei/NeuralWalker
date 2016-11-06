@@ -8,3 +8,9 @@
 *.txt
 *.out
 *.pkl
+
+depre/*
+results/*.pkl
+
+.DS_Store
+*/.DS_Store
